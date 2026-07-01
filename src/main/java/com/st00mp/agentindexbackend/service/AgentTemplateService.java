@@ -2,8 +2,11 @@ package com.st00mp.agentindexbackend.service;
 
 import com.st00mp.agentindexbackend.dto.CreateTemplateRequest;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
+import com.st00mp.agentindexbackend.exception.TemplateNotFoundException;
 import com.st00mp.agentindexbackend.repository.AgentTemplateRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AgentTemplateService {
@@ -22,7 +25,16 @@ public class AgentTemplateService {
         template.setInstructions(request.instructions());
         template.setFields(request.fields());
         template.setVersion(request.version());
+
         return agentTemplateRepository.save(template);
     }
 
+    public AgentTemplate getById(Long id) {
+        return agentTemplateRepository.findById(id)
+                .orElseThrow(() -> new TemplateNotFoundException(id));
+    }
+
+    public List<AgentTemplate> getAll() {
+        return agentTemplateRepository.findAll();
+    }
 }

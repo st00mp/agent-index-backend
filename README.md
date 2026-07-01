@@ -36,7 +36,9 @@ The API is documented and browsable via Swagger UI once the app is running:
 
 ### Endpoints
 
-- `POST /templates` — create an agent template
+- `POST /templates` — create an agent template (400 if validation fails)
+- `GET /templates` — list all agent templates
+- `GET /templates/{id}` — get an agent template by ID (404 if not found)
 
 ## Build & tests
 

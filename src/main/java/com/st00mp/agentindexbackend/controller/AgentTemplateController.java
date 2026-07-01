@@ -11,12 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 public class AgentTemplateController {
@@ -52,5 +51,34 @@ public class AgentTemplateController {
         return ResponseEntity
                 .created(location)
                 .body(saved);
+    }
+
+    @Operation(
+            summary = "Get an agent template",
+            description = "Get an agent template by its ID and returns 404 if the template does not exist."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Template successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "No template exists with the given ID",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "object", example = "{\"error\":\"AgentTemplate 42 not found\"}")))
+    })
+    @GetMapping("/templates/{id}")
+    public ResponseEntity<AgentTemplate> getTemplateById(@PathVariable Long id) {
+        AgentTemplate template = agentTemplateService.getById(id);
+        return ResponseEntity.ok(template);
+    }
+
+    @Operation(
+            summary = "List all agent templates",
+            description = "Returns all agent templates. Returns an empty array if no template exists."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Templates successfully retrieved")
+    })
+    @GetMapping("/templates")
+    public ResponseEntity<List<AgentTemplate>> getAllTemplates() {
+        List<AgentTemplate> templates = agentTemplateService.getAll();
+        return ResponseEntity.ok(templates);
     }
 }
