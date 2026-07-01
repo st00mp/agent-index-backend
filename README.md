@@ -10,13 +10,13 @@ REST API built with Spring Boot. First backend service of the AgentIndex project
 
 - Java 21
 - Spring Boot 4.1
-- Spring Data JPA · H2 (dev)
+- Spring Data JPA · H2 in-memory (dev/test)
 - Maven
 
 ## Run locally
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 The application starts on `http://localhost:8080`.
@@ -28,8 +28,18 @@ curl http://localhost:8080/actuator/health
 # {"status":"UP"}
 ```
 
+## API
+
+The API is documented and browsable via Swagger UI once the app is running:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+### Endpoints
+
+- `POST /templates` — create an agent template
+
 ## Build & tests
 
 ```bash
-mvn verify
+./mvnw verify
 ```
