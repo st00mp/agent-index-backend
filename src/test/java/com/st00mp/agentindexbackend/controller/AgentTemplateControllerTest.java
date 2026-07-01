@@ -1,6 +1,6 @@
 package com.st00mp.agentindexbackend.controller;
 
-import com.st00mp.agentindexbackend.dto.CreateTemplateRequest;
+import com.st00mp.agentindexbackend.dto.TemplateRequest;
 import com.st00mp.agentindexbackend.service.AgentTemplateService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ class AgentTemplateControllerTest {
         @Test
         void createTemplate_nominal_returns201() throws Exception {
             // Given
-            var request = new CreateTemplateRequest(
+            var request = new TemplateRequest(
                     "Quote Agent",
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
@@ -58,7 +58,7 @@ class AgentTemplateControllerTest {
         @Test
         void createTemplate_blankName_returns400() throws Exception {
             // Given
-            var request = new CreateTemplateRequest(
+            var request = new TemplateRequest(
                     "",
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
@@ -84,7 +84,7 @@ class AgentTemplateControllerTest {
         @Test
         void getTemplate_nominal_returns200() throws Exception {
             // Given
-            var request = new CreateTemplateRequest(
+            var request = new TemplateRequest(
                     "Quote Agent",
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",

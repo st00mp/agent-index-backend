@@ -3,7 +3,7 @@ package com.st00mp.agentindexbackend.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-public record CreateTemplateRequest (
+public record TemplateRequest(
 
         @Schema(description = "Name of the agent template", example = "Quote Agent")
         @NotBlank String name,

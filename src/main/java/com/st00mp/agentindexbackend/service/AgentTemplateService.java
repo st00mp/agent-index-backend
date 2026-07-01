@@ -1,6 +1,6 @@
 package com.st00mp.agentindexbackend.service;
 
-import com.st00mp.agentindexbackend.dto.CreateTemplateRequest;
+import com.st00mp.agentindexbackend.dto.TemplateRequest;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
 import com.st00mp.agentindexbackend.exception.TemplateNotFoundException;
 import com.st00mp.agentindexbackend.repository.AgentTemplateRepository;
@@ -17,7 +17,7 @@ public class AgentTemplateService {
         this.agentTemplateRepository = agentTemplateRepository;
     }
 
-    public AgentTemplate create(CreateTemplateRequest request) {
+    public AgentTemplate create(TemplateRequest request) {
         AgentTemplate template = new AgentTemplate();
         template.setName(request.name());
         template.setCategory(request.category());

@@ -1,6 +1,6 @@
 package com.st00mp.agentindexbackend.controller;
 
-import com.st00mp.agentindexbackend.dto.CreateTemplateRequest;
+import com.st00mp.agentindexbackend.dto.TemplateRequest;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
 import com.st00mp.agentindexbackend.service.AgentTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +38,7 @@ public class AgentTemplateController {
                             schema = @Schema(type = "object", example = "{\"name\":\"must not be blank\",\"version\":\"must not be blank\"}")))
     })
     @PostMapping("/templates")
-    public ResponseEntity<AgentTemplate> createTemplate(@Valid @RequestBody CreateTemplateRequest request) {
+    public ResponseEntity<AgentTemplate> createTemplate(@Valid @RequestBody TemplateRequest request) {
 
         AgentTemplate saved = agentTemplateService.create(request);
 
