@@ -81,4 +81,40 @@ public class AgentTemplateController {
         List<AgentTemplate> templates = agentTemplateService.getAll();
         return ResponseEntity.ok(templates);
     }
+
+    @Operation(
+            summary = "Update an agent template",
+            description = "Updates an existing agent template by its ID and returns the updated resource. Returns 404 if the template does not exist."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Template successfully updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body (missing or blank field)",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "object", example = "{\"name\":\"must not be blank\",\"version\":\"must not be blank\"}"))),
+            @ApiResponse(responseCode = "404", description = "No template exists with the given ID",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "object", example = "{\"error\":\"AgentTemplate 42 not found\"}")))
+    })
+    @PutMapping("/templates/{id}")
+    public ResponseEntity<AgentTemplate> updateTemplate(@PathVariable Long id, @Valid @RequestBody TemplateRequest request) {
+        AgentTemplate updated = agentTemplateService.update(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @Operation(
+            summary = "Delete an agent template",
+            description = "Deletes an agent template by its ID. Returns 404 if the template does not exist."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Template successfully deleted"),
+            @ApiResponse(responseCode = "404", description = "No template exists with the given ID",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "object", example = "{\"error\":\"AgentTemplate 42 not found\"}")))
+    })
+    @DeleteMapping("/templates/{id}")
+    public ResponseEntity<Void> deleteTemplate(@PathVariable Long id) {
+        agentTemplateService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

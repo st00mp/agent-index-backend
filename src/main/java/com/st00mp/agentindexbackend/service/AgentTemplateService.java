@@ -18,7 +18,9 @@ public class AgentTemplateService {
     }
 
     public AgentTemplate create(TemplateRequest request) {
+
         AgentTemplate template = new AgentTemplate();
+
         template.setName(request.name());
         template.setCategory(request.category());
         template.setDescription(request.description());
@@ -37,4 +39,24 @@ public class AgentTemplateService {
     public List<AgentTemplate> getAll() {
         return agentTemplateRepository.findAll();
     }
+
+    public AgentTemplate update(Long id, TemplateRequest request) {
+
+        AgentTemplate template = getById(id);
+
+        template.setName(request.name());
+        template.setCategory(request.category());
+        template.setDescription(request.description());
+        template.setInstructions(request.instructions());
+        template.setFields(request.fields());
+        template.setVersion(request.version());
+
+        return agentTemplateRepository.save(template);
+    }
+
+    public void delete(Long id) {
+        AgentTemplate template = getById(id);
+        agentTemplateRepository.delete(template);
+    }
+
 }

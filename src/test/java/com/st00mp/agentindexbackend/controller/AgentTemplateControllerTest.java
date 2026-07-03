@@ -11,8 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -119,5 +118,119 @@ class AgentTemplateControllerTest {
         mockMvc.perform(get("/templates"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
+    }
+
+    @Nested
+    class UpdateTemplateTests {
+
+        @Test
+        void updateTemplate_nominal_returns200() throws Exception {
+            // Given
+            var seed = new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "Generates a personalised quote based on the company name and hourly rate.",
+                    "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
+                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    "1.0.0"
+            );
+            var id = agentTemplateService.create(seed).getId();
+
+            var update = new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "Generates a personalised quote based on the company name and hourly rate.",
+                    "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
+                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    "2.0.0"
+            );
+            var body = objectMapper.writeValueAsString(update);
+
+            // When
+            mockMvc.perform(put("/templates/{id}", id)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(id))
+                    .andExpect(jsonPath("$.version").value(update.version()));
+        }
+
+        @Test
+        void updateTemplate_missingId_returns404()  throws Exception {
+            // Given: no template exists with this id
+            var update = new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "Generates a personalised quote based on the company name and hourly rate.",
+                    "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
+                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    "1.0.0"
+            );
+            var body = objectMapper.writeValueAsString(update);
+
+            // When/ Then
+            mockMvc.perform(put("/templates/{id}", 999999L)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void updateTemplate_blankName_returns400() throws Exception {
+            // Given: invalid body (name blank)
+            var invalid = new TemplateRequest(
+                    "",
+                    "Sales",
+                    "Generates a personalised quote based on the company name and hourly rate.",
+                    "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
+                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    "1.0.0"
+            );
+            var body = objectMapper.writeValueAsString(invalid);
+
+            // When / Then
+            mockMvc.perform(put("/templates/{id}", 1L)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.name").exists());
+        }
+    }
+
+    @Nested
+    class DeleteTemplateTests {
+
+        @Test
+        void deleteTemplate_nominal_returns204() throws Exception {
+            // Given
+            var seed = new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "Generates a personalised quote based on the company name and hourly rate.",
+                    "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
+                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    "1.0.0"
+            );
+            var id = agentTemplateService.create(seed).getId();
+
+            // When/ Then
+            mockMvc.perform(delete("/templates/{id}", id))
+                    .andExpect(status().isNoContent());
+            mockMvc.perform(get("/templates/{id}", id))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void deleteTemplate_missingId_returns404() throws Exception {
+            // Given: no template exists with this id
+
+            // When/ Then
+            mockMvc.perform(delete("/templates/{id}", 999999L))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").exists());
+        }
     }
 }
