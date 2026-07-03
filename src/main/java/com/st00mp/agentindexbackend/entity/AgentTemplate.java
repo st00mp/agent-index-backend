@@ -25,6 +25,8 @@ public class AgentTemplate {
     @Column(nullable = false)
     private String instructions;
 
+    // TODO(#8): migrate to a structured/jsonb column + converter
+    // if JSON parsing spreads or DB-level validation is needed.
     @Lob
     @Column(nullable = false)
     private String fields;
