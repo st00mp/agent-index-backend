@@ -37,11 +37,19 @@ The API is documented and browsable via Swagger UI once the app is running:
 
 ### Endpoints
 
+**Templates**
+
 - `POST /templates` — create an agent template (201 with `Location` header, 400 if validation fails)
 - `GET /templates` — list all agent templates (empty array if none)
 - `GET /templates/{id}` — get an agent template by ID (404 if not found)
 - `PUT /templates/{id}` — update an agent template (400 if validation fails, 404 if not found)
 - `DELETE /templates/{id}` — delete an agent template (204 on success, 404 if not found)
+
+**Instances**
+
+- `POST /templates/{templateId}/instances` — create an agent instance from a template
+  (201 with `Location` header, 400 if `values` is missing or required field values are
+  missing/blank, 404 if the template does not exist)
 
 ## Build & tests
 

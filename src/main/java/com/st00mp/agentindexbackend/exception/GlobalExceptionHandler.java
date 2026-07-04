@@ -30,4 +30,11 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", exception.getMessage()));
     }
+
+    @ExceptionHandler(IncompleteInstanceException.class)
+    public ResponseEntity<Map<String, String>> handleIncompleteInstance(IncompleteInstanceException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", exception.getMessage()));
+    }
 }
