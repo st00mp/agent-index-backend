@@ -1,0 +1,12 @@
+target/
+.git/
+.idea/
+.mvn/
+mvnw
+mvnw.cmd
+*.md
+.gitignore
+.gitattributes
+.gitlab-ci.yml
+Dockerfile
+.dockerignore
