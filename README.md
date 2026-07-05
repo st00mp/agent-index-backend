@@ -10,8 +10,8 @@ REST API built with Spring Boot. First backend service of the AgentIndex project
 
 - Java 21
 - Spring Boot 4.1
-- Spring Data JPA · H2 in-memory (dev/test)
-- Maven
+- Spring Data JPA · H2 in-memory (dev/test) · PostgreSQL (Docker)
+- Maven · Docker
 
 ## Run locally
 
@@ -27,6 +27,17 @@ Check it's running:
 curl http://localhost:8080/actuator/health
 # {"status":"UP"}
 ```
+
+## Run with Docker
+
+No Java or Maven required — only Docker:
+
+```bash
+docker compose up --build
+```
+
+Builds the image (multi-stage) and starts the app with a PostgreSQL database
+on `http://localhost:8080`.
 
 ## API
 
