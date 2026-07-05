@@ -50,6 +50,9 @@ The API is documented and browsable via Swagger UI once the app is running:
 - `POST /templates/{templateId}/instances` — create an agent instance from a template
   (201 with `Location` header, 400 if `values` is missing or required field values are
   missing/blank, 404 if the template does not exist)
+- `GET /instances/{instanceId}/output` — assemble and return the instance's instructions as
+  plain text, substituting each `{{placeholder}}` with its stored value (200 `text/plain`,
+  404 if the instance does not exist, 422 if one or more placeholders cannot be resolved)
 
 ## Build & tests
 
