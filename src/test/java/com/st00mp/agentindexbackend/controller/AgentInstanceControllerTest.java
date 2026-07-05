@@ -2,6 +2,9 @@ package com.st00mp.agentindexbackend.controller;
 
 import com.st00mp.agentindexbackend.dto.InstanceRequest;
 import com.st00mp.agentindexbackend.dto.TemplateRequest;
+import com.st00mp.agentindexbackend.entity.AgentInstance;
+import com.st00mp.agentindexbackend.repository.AgentInstanceRepository;
+import com.st00mp.agentindexbackend.service.AgentInstanceService;
 import com.st00mp.agentindexbackend.service.AgentTemplateService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -29,6 +33,12 @@ class AgentInstanceControllerTest {
 
     @Autowired
     private AgentTemplateService agentTemplateService;
+
+    @Autowired
+    private AgentInstanceService agentInstanceService;
+
+    @Autowired
+    private AgentInstanceRepository agentInstanceRepository;
 
     @Nested
     public class CreateInstanceTests {
@@ -130,6 +140,73 @@ class AgentInstanceControllerTest {
             mockMvc.perform(post("/templates/{id}/instances", 999999L)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
+                    // Then
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+    }
+
+    @Nested
+    public class GetInstanceOutputTests {
+
+        @Test
+        void getInstanceOutput_nominal_returns200() throws Exception {
+            // Given
+            var templateId = agentTemplateService.create(new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "desc",
+                    "You are the assistant for {{company_name}}.",
+                    "[{\"key\":\"company_name\"}]",
+                    "1.0.0")).getId();
+
+            var instanceId = agentInstanceService.create(templateId,
+                    new InstanceRequest(Map.of("company_name", "Fiduciaire Horizon"))).getId();
+
+            // When
+            mockMvc.perform(get("/instances/{id}/output", instanceId))
+                    // Then
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
+                    .andExpect(content().string("You are the assistant for Fiduciaire Horizon."));
+        }
+
+        @Test
+        void getInstanceOutput_unknownInstance_returns404() throws Exception {
+            mockMvc.perform(get("/instances/{id}/output", 999999L))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void getInstanceOutput_unresolvedPlaceholder_returns422() throws Exception {
+            // Given
+            var templateId = agentTemplateService.create(new TemplateRequest(
+                    "Quote Agent", "Sales", "desc",
+                    "Hi {{company_name}}, signed {{signature}}.",   // 2 placeholders
+                    "[{\"key\":\"company_name\"}]",                  // fields : signature ABSENT
+                    "1.0.0")).getId();
+
+            var instanceId = agentInstanceService.create(templateId,
+                    new InstanceRequest(Map.of("company_name", "Fiduciaire Horizon"))).getId();
+
+            // When
+            mockMvc.perform(get("/instances/{id}/output", instanceId))
+                    // Then
+                    .andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void getInstanceOutput_unknownTemplate_returns404() throws Exception {
+            // Given
+            var orphan = new AgentInstance();
+            orphan.setTemplateId(999999L);
+            orphan.setValues(Map.of("company_name", "Fiduciaire Horizon"));
+            var instanceId = agentInstanceRepository.save(orphan).getId();
+
+            // When
+            mockMvc.perform(get("/instances/{id}/output", instanceId))
                     // Then
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error").exists());

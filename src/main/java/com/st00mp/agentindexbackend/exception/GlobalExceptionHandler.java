@@ -37,4 +37,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", exception.getMessage()));
     }
+
+    @ExceptionHandler(UnresolvedPlaceholderException.class)
+    public ResponseEntity<Map<String, String>> handleUnresolvedPlaceholder(UnresolvedPlaceholderException exception) {
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(Map.of("error", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InstanceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleInstanceNotFound(InstanceNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", exception.getMessage()));
+    }
 }
