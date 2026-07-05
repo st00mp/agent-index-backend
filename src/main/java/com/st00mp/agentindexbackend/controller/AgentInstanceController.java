@@ -79,4 +79,22 @@ public class AgentInstanceController {
         String output = assemblyService.assembleOutput(instanceId);
         return ResponseEntity.ok(output);
     }
+
+    @Operation(
+            summary = "Get an agent instance by ID",
+            description = "Returns the agent instance identified by instanceId, including its template reference and stored field values."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Instance found",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AgentInstance.class))),
+            @ApiResponse(responseCode = "404", description = "No instance exists with the given ID",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "object", example = "{\"error\":\"AgentInstance 42 not found\"}")))
+    })
+    @GetMapping("/instances/{instanceId}")
+    public ResponseEntity<AgentInstance> getInstanceById(@PathVariable Long instanceId) {
+        AgentInstance instance = agentInstanceService.getById(instanceId);
+        return ResponseEntity.ok(instance);
+    }
 }

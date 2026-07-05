@@ -17,8 +17,8 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -208,6 +208,41 @@ class AgentInstanceControllerTest {
             // When
             mockMvc.perform(get("/instances/{id}/output", instanceId))
                     // Then
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+    }
+
+    @Nested
+    public class GetInstanceByIdTests {
+
+        @Test
+        void getInstanceById_nominal_returns200() throws Exception {
+            // Given
+            var templateId = agentTemplateService.create(new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "desc",
+                    "You are the assistant for {{company_name}}.",
+                    "[{\"key\":\"company_name\"}]",
+                    "1.0.0")).getId();
+
+            var instanceId = agentInstanceService.create(templateId,
+                    new InstanceRequest(Map.of("company_name", "Fiduciaire Horizon"))).getId();
+
+            // When
+            mockMvc.perform(get("/instances/{instanceId}", instanceId))
+                    // Then
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(instanceId))
+                    .andExpect(jsonPath("$.templateId").value(templateId))
+                    .andExpect(jsonPath("$.values.company_name").value("Fiduciaire Horizon"));
+        }
+
+        @Test
+        void getInstanceById_unknownInstance_returns404() throws Exception {
+            mockMvc.perform(get("/instances/{instanceId}", 999999L))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error").exists());
         }

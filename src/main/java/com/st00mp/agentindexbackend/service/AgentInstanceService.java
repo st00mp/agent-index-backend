@@ -4,6 +4,7 @@ import com.st00mp.agentindexbackend.dto.InstanceRequest;
 import com.st00mp.agentindexbackend.entity.AgentInstance;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
 import com.st00mp.agentindexbackend.exception.IncompleteInstanceException;
+import com.st00mp.agentindexbackend.exception.InstanceNotFoundException;
 import com.st00mp.agentindexbackend.exception.TemplateNotFoundException;
 import com.st00mp.agentindexbackend.repository.AgentInstanceRepository;
 import org.springframework.stereotype.Service;
@@ -73,5 +74,17 @@ public class AgentInstanceService {
         instance.setValues(request.values());
 
         return agentInstanceRepository.save(instance);
+    }
+
+    /**
+     * Retrieves an existing agent instance by its identifier.
+     *
+     * @param instanceId the identifier of the instance to retrieve
+     * @return the matching {@link AgentInstance}
+     * @throws InstanceNotFoundException if no instance matches instanceId
+     */
+    public AgentInstance getById(Long instanceId) {
+        return agentInstanceRepository.findById(instanceId)
+                .orElseThrow(() -> new InstanceNotFoundException(instanceId));
     }
 }
