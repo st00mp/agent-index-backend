@@ -4,7 +4,6 @@ import com.st00mp.agentindexbackend.entity.AgentInstance;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
 import com.st00mp.agentindexbackend.exception.InstanceNotFoundException;
 import com.st00mp.agentindexbackend.exception.UnresolvedPlaceholderException;
-import com.st00mp.agentindexbackend.repository.AgentInstanceRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -20,12 +19,12 @@ import java.util.regex.Pattern;
 public class AssemblyService {
 
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{(\\w+)\\}\\}");
-    private final AgentInstanceRepository agentInstanceRepository;
     private final AgentTemplateService agentTemplateService;
+    private final AgentInstanceService agentInstanceService;
 
-    public AssemblyService(AgentInstanceRepository agentInstanceRepository, AgentTemplateService agentTemplateService) {
-        this.agentInstanceRepository = agentInstanceRepository;
+    public AssemblyService(AgentTemplateService agentTemplateService, AgentInstanceService agentInstanceService) {
         this.agentTemplateService = agentTemplateService;
+        this.agentInstanceService = agentInstanceService;
     }
 
     /**
@@ -39,9 +38,7 @@ public class AssemblyService {
      */
     public String assembleOutput(Long instanceId) {
 
-        AgentInstance instance = agentInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new InstanceNotFoundException(instanceId));
-
+        AgentInstance instance = agentInstanceService.getById(instanceId);
         AgentTemplate template = agentTemplateService.getById(instance.getTemplateId());
 
         return assemble(template.getInstructions(), instance.getValues());
