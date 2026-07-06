@@ -78,6 +78,43 @@ class AgentTemplateControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.name").exists());
         }
+
+        @Test
+        void createTemplate_malformedJson_returns400() throws Exception {
+            // Given: syntactically invalid JSON
+            var body = "{\"name\": \"Quote Agent\", ";
+
+            // When
+            mockMvc.perform(post("/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void createTemplate_wrongFieldType_returns400() throws Exception {
+            // Given: "fields" sent as an array instead of a String
+            var body = """
+                    {
+                      "name": "Quote Agent",
+                      "category": "Sales",
+                      "description": "Generates a personalised quote.",
+                      "instructions": "You are a quote assistant.",
+                      "fields": [{"key": "company_name"}],
+                      "version": "1.0.0"
+                    }
+                    """;
+
+            // When
+            mockMvc.perform(post("/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+        }
     }
 
     @Nested
