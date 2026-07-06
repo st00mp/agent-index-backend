@@ -4,11 +4,13 @@ import com.st00mp.agentindexbackend.dto.TemplateRequest;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
 import com.st00mp.agentindexbackend.service.AgentTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Agent Templates", description = "Create, read, update and delete reusable agent templates")
 @RestController
 public class AgentTemplateController {
 
@@ -30,13 +33,9 @@ public class AgentTemplateController {
             summary = "Create an agent template",
             description = "Creates a new agent template and returns the created resource with its URL in the Location header."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Template successfully created",
-                    headers = @Header(name = "Location", description = "URL of the created resource, e.g. /templates/42")),
-            @ApiResponse(responseCode = "400", description = "Invalid request body (missing or blank field)",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "object", example = "{\"name\":\"must not be blank\",\"version\":\"must not be blank\"}")))
-    })
+    @ApiResponse(responseCode = "201", description = "Template successfully created",
+            headers = @Header(name = "Location", description = "URL of the created resource, e.g. /templates/42"),
+            content = @Content(schema = @Schema(implementation = AgentTemplate.class)))
     @PostMapping("/templates")
     public ResponseEntity<AgentTemplate> createTemplate(@Valid @RequestBody TemplateRequest request) {
 
@@ -55,16 +54,13 @@ public class AgentTemplateController {
 
     @Operation(
             summary = "Get an agent template",
-            description = "Get an agent template by its ID and returns 404 if the template does not exist."
+            description = "Returns an agent template by its ID."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Template successfully retrieved"),
-            @ApiResponse(responseCode = "404", description = "No template exists with the given ID",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "object", example = "{\"error\":\"AgentTemplate 42 not found\"}")))
-    })
+    @ApiResponse(responseCode = "200", description = "Template successfully retrieved",
+            content = @Content(schema = @Schema(implementation = AgentTemplate.class)))
     @GetMapping("/templates/{id}")
-    public ResponseEntity<AgentTemplate> getTemplateById(@PathVariable Long id) {
+    public ResponseEntity<AgentTemplate> getTemplateById(
+            @Parameter(description = "ID of the template", example = "42") @PathVariable Long id) {
         AgentTemplate template = agentTemplateService.getById(id);
         return ResponseEntity.ok(template);
     }
@@ -73,9 +69,8 @@ public class AgentTemplateController {
             summary = "List all agent templates",
             description = "Returns all agent templates. Returns an empty array if no template exists."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Templates successfully retrieved")
-    })
+    @ApiResponse(responseCode = "200", description = "Templates successfully retrieved",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = AgentTemplate.class))))
     @GetMapping("/templates")
     public ResponseEntity<List<AgentTemplate>> getAllTemplates() {
         List<AgentTemplate> templates = agentTemplateService.getAll();
@@ -84,35 +79,26 @@ public class AgentTemplateController {
 
     @Operation(
             summary = "Update an agent template",
-            description = "Updates an existing agent template by its ID and returns the updated resource. Returns 404 if the template does not exist."
+            description = "Updates an existing agent template by its ID and returns the updated resource."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Template successfully updated"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body (missing or blank field)",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "object", example = "{\"name\":\"must not be blank\",\"version\":\"must not be blank\"}"))),
-            @ApiResponse(responseCode = "404", description = "No template exists with the given ID",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "object", example = "{\"error\":\"AgentTemplate 42 not found\"}")))
-    })
+    @ApiResponse(responseCode = "200", description = "Template successfully updated",
+            content = @Content(schema = @Schema(implementation = AgentTemplate.class)))
     @PutMapping("/templates/{id}")
-    public ResponseEntity<AgentTemplate> updateTemplate(@PathVariable Long id, @Valid @RequestBody TemplateRequest request) {
+    public ResponseEntity<AgentTemplate> updateTemplate(
+            @Parameter(description = "ID of the template", example = "42") @PathVariable Long id,
+            @Valid @RequestBody TemplateRequest request) {
         AgentTemplate updated = agentTemplateService.update(id, request);
         return ResponseEntity.ok(updated);
     }
 
     @Operation(
             summary = "Delete an agent template",
-            description = "Deletes an agent template by its ID. Returns 404 if the template does not exist."
+            description = "Deletes an agent template by its ID."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Template successfully deleted"),
-            @ApiResponse(responseCode = "404", description = "No template exists with the given ID",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "object", example = "{\"error\":\"AgentTemplate 42 not found\"}")))
-    })
+    @ApiResponse(responseCode = "204", description = "Template successfully deleted")
     @DeleteMapping("/templates/{id}")
-    public ResponseEntity<Void> deleteTemplate(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTemplate(
+            @Parameter(description = "ID of the template", example = "42") @PathVariable Long id) {
         agentTemplateService.delete(id);
         return ResponseEntity.noContent().build();
     }
