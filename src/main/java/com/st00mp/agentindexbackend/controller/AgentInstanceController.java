@@ -74,15 +74,15 @@ public class AgentInstanceController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(type = "object", example = "{\"error\":\"Unresolved placeholders (no value provided): [tone, name]\"}")))
     })
-    @GetMapping(value = "/instances/{instanceId}/output", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> getInstanceOutput(@PathVariable Long instanceId) {
-        String output = assemblyService.assembleOutput(instanceId);
+    @GetMapping(value = "/instances/{id}/output", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> getInstanceOutput(@PathVariable Long id) {
+        String output = assemblyService.assembleOutput(id);
         return ResponseEntity.ok(output);
     }
 
     @Operation(
             summary = "Get an agent instance by ID",
-            description = "Returns the agent instance identified by instanceId, including its template reference and stored field values."
+            description = "Returns the agent instance identified by id, including its template reference and stored field values."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Instance found",
@@ -92,9 +92,9 @@ public class AgentInstanceController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(type = "object", example = "{\"error\":\"AgentInstance 42 not found\"}")))
     })
-    @GetMapping("/instances/{instanceId}")
-    public ResponseEntity<AgentInstance> getInstanceById(@PathVariable Long instanceId) {
-        AgentInstance instance = agentInstanceService.getById(instanceId);
+    @GetMapping("/instances/{id}")
+    public ResponseEntity<AgentInstance> getInstanceById(@PathVariable Long id) {
+        AgentInstance instance = agentInstanceService.getById(id);
         return ResponseEntity.ok(instance);
     }
 }

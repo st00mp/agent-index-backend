@@ -231,7 +231,7 @@ class AgentInstanceControllerTest {
                     new InstanceRequest(Map.of("company_name", "Fiduciaire Horizon"))).getId();
 
             // When
-            mockMvc.perform(get("/instances/{instanceId}", instanceId))
+            mockMvc.perform(get("/instances/{id}", instanceId))
                     // Then
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -242,7 +242,7 @@ class AgentInstanceControllerTest {
 
         @Test
         void getInstanceById_unknownInstance_returns404() throws Exception {
-            mockMvc.perform(get("/instances/{instanceId}", 999999L))
+            mockMvc.perform(get("/instances/{id}", 999999L))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error").exists());
         }
