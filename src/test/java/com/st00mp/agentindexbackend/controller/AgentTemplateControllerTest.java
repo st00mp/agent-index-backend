@@ -9,11 +9,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 class AgentTemplateControllerTest {
@@ -23,6 +25,7 @@ class AgentTemplateControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private AgentTemplateService agentTemplateService;
 
@@ -157,7 +160,7 @@ class AgentTemplateControllerTest {
         }
 
         @Test
-        void updateTemplate_missingId_returns404()  throws Exception {
+        void updateTemplate_missingId_returns404() throws Exception {
             // Given: no template exists with this id
             var update = new TemplateRequest(
                     "Quote Agent",
