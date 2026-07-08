@@ -202,6 +202,37 @@ class AgentInstanceControllerTest {
         }
 
         @Test
+        void getInstanceOutput_unknownInstance_acceptTextPlain_returns404AsJson() throws Exception {
+            // Regression: the output endpoint is produces=text/plain, but errors are JSON.
+            // A client sending Accept: text/plain must still get the 404 (not a bare 500
+            // from a content-negotiation collision).
+            mockMvc.perform(get("/instances/{id}/output", 999999L)
+                            .accept(MediaType.TEXT_PLAIN))
+                    .andExpect(status().isNotFound())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void getInstanceOutput_unresolvedPlaceholder_acceptTextPlain_returns422AsJson() throws Exception {
+            // Regression: same collision as above, on the 422 branch.
+            var templateId = agentTemplateService.create(new TemplateRequest(
+                    "Quote Agent", "Sales", "desc",
+                    "Hi {{company_name}}, signed {{signature}}.",
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),
+                    "1.0.0")).getId();
+
+            var instanceId = agentInstanceService.create(templateId,
+                    new InstanceRequest(Map.of("company_name", "Fiduciaire Horizon"))).getId();
+
+            mockMvc.perform(get("/instances/{id}/output", instanceId)
+                            .accept(MediaType.TEXT_PLAIN))
+                    .andExpect(status().isUnprocessableEntity())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
         void getInstanceOutput_unknownTemplate_returns404() throws Exception {
             // Given
             var orphan = new AgentInstance();
