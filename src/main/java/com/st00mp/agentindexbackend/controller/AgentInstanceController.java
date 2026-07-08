@@ -65,7 +65,8 @@ public class AgentInstanceController {
                     schema = @Schema(type = "string", example = "You are a helpful assistant with a formal tone.")))
     @ApiResponse(responseCode = "422", description = "One or more placeholders could not be resolved",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "object", example = "{\"error\":\"Unresolved placeholders (no value provided): [tone, name]\"}")))
+                    schema = @Schema(type = "object", example = """
+                            {"error": "Unresolved placeholders (no value provided): [tone, name]"}""")))
     @GetMapping(value = "/instances/{id}/output", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> getInstanceOutput(
             @Parameter(description = "ID of the instance", example = "42") @PathVariable Long id) {
