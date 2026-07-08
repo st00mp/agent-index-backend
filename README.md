@@ -39,6 +39,37 @@ docker compose up --build
 Builds the image (multi-stage) and starts the app with a PostgreSQL database
 on `http://localhost:8080`.
 
+## Quickstart
+
+The full chain in three calls: create a template, instantiate it with values,
+then assemble the output. The `values` keys must match the template's field `key`s.
+
+```bash
+# 1. Create a template (returns 201 with a Location header, e.g. /templates/1)
+curl -i -X POST http://localhost:8080/templates \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "name": "Quote Agent",
+        "category": "Sales",
+        "description": "Generates a personalised quote.",
+        "instructions": "You are a quote assistant for {{company_name}}. Bill at {{hourly_rate}} €/h.",
+        "fields": [
+          {"key": "company_name", "label": "Company name", "type": "text",   "help": ""},
+          {"key": "hourly_rate",  "label": "Hourly rate",  "type": "number", "help": "e.g. 65"}
+        ],
+        "version": "1.0.0"
+      }'
+
+# 2. Create an instance from that template (use the id from step 1)
+curl -i -X POST http://localhost:8080/templates/1/instances \
+  -H 'Content-Type: application/json' \
+  -d '{"values": {"company_name": "Acme", "hourly_rate": "65"}}'
+
+# 3. Assemble the output (use the instance id from step 2)
+curl http://localhost:8080/instances/1/output
+# You are a quote assistant for Acme. Bill at 65 €/h.
+```
+
 ## API
 
 The API is documented and browsable via Swagger UI once the app is running:
