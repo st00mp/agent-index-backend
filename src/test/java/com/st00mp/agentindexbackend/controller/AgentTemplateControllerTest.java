@@ -1,6 +1,7 @@
 package com.st00mp.agentindexbackend.controller;
 
 import com.st00mp.agentindexbackend.dto.TemplateRequest;
+import com.st00mp.agentindexbackend.entity.FieldDefinition;
 import com.st00mp.agentindexbackend.service.AgentTemplateService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,7 +43,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var body = objectMapper.writeValueAsString(request);
@@ -65,7 +70,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var body = objectMapper.writeValueAsString(request);
@@ -95,7 +102,74 @@ class AgentTemplateControllerTest {
 
         @Test
         void createTemplate_wrongFieldType_returns400() throws Exception {
-            // Given: "fields" sent as an array instead of a String
+            // Given: "fields" sent as a scalar string instead of an array of field objects
+            var body = """
+                    {
+                      "name": "Quote Agent",
+                      "category": "Sales",
+                      "description": "Generates a personalised quote.",
+                      "instructions": "You are a quote assistant.",
+                      "fields": "company_name",
+                      "version": "1.0.0"
+                    }
+                    """;
+
+            // When
+            mockMvc.perform(post("/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void createTemplate_emptyFields_returns400() throws Exception {
+            // Given: an empty fields list violates @NotEmpty
+            var request = new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "Generates a personalised quote.",
+                    "You are a quote assistant.",
+                    List.of(),
+                    "1.0.0"
+            );
+            var body = objectMapper.writeValueAsString(request);
+
+            // When
+            mockMvc.perform(post("/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.fields").exists());
+        }
+
+        @Test
+        void createTemplate_fieldWithBlankKey_returns400() throws Exception {
+            // Given: a field whose key is blank violates @NotBlank via @Valid cascade
+            var request = new TemplateRequest(
+                    "Quote Agent",
+                    "Sales",
+                    "Generates a personalised quote.",
+                    "You are a quote assistant.",
+                    List.of(new FieldDefinition("   ", "Company name", "text", "")),
+                    "1.0.0"
+            );
+            var body = objectMapper.writeValueAsString(request);
+
+            // When
+            mockMvc.perform(post("/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    // Then
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.['fields[0].key']").exists());
+        }
+
+        @Test
+        void createTemplate_fieldWithMissingLabelAndType_returns400() throws Exception {
+            // Given: a field missing label and type violates @NotBlank via @Valid cascade
             var body = """
                     {
                       "name": "Quote Agent",
@@ -113,7 +187,8 @@ class AgentTemplateControllerTest {
                             .content(body))
                     // Then
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
+                    .andExpect(jsonPath("$.['fields[0].label']").exists())
+                    .andExpect(jsonPath("$.['fields[0].type']").exists());
         }
     }
 
@@ -128,7 +203,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var seeded = agentTemplateService.create(request);
@@ -171,7 +248,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var id = agentTemplateService.create(seed).getId();
@@ -181,7 +260,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "2.0.0"
             );
             var body = objectMapper.writeValueAsString(update);
@@ -204,7 +285,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var body = objectMapper.writeValueAsString(update);
@@ -226,7 +309,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var body = objectMapper.writeValueAsString(invalid);
@@ -251,7 +336,9 @@ class AgentTemplateControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}. Always base your estimates on an hourly rate of {{hourly_rate}} €/h and present them in a clear, professional format.",
-                    "[{\"key\":\"company_name\",\"label\":\"Company name\",\"type\":\"text\",\"help\":\"\"},{\"key\":\"hourly_rate\",\"label\":\"Hourly rate\",\"type\":\"number\",\"help\":\"e.g. 65\"}]",
+                    List.of(
+                            new FieldDefinition("company_name", "Company name", "text", ""),
+                            new FieldDefinition("hourly_rate", "Hourly rate", "number", "e.g. 65")),
                     "1.0.0"
             );
             var id = agentTemplateService.create(seed).getId();

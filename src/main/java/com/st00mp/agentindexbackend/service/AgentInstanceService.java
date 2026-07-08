@@ -3,13 +3,12 @@ package com.st00mp.agentindexbackend.service;
 import com.st00mp.agentindexbackend.dto.InstanceRequest;
 import com.st00mp.agentindexbackend.entity.AgentInstance;
 import com.st00mp.agentindexbackend.entity.AgentTemplate;
+import com.st00mp.agentindexbackend.entity.FieldDefinition;
 import com.st00mp.agentindexbackend.exception.IncompleteInstanceException;
 import com.st00mp.agentindexbackend.exception.InstanceNotFoundException;
 import com.st00mp.agentindexbackend.exception.TemplateNotFoundException;
 import com.st00mp.agentindexbackend.repository.AgentInstanceRepository;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,14 +18,11 @@ public class AgentInstanceService {
 
     private final AgentInstanceRepository agentInstanceRepository;
     private final AgentTemplateService agentTemplateService;
-    private final ObjectMapper objectMapper;
 
     public AgentInstanceService(AgentInstanceRepository agentInstanceRepository,
-                                AgentTemplateService agentTemplateService,
-                                ObjectMapper objectMapper) {
+                                AgentTemplateService agentTemplateService) {
         this.agentInstanceRepository = agentInstanceRepository;
         this.agentTemplateService = agentTemplateService;
-        this.objectMapper = objectMapper;
     }
 
     /**
@@ -50,9 +46,8 @@ public class AgentInstanceService {
         AgentTemplate template = agentTemplateService.getById(templateId);
 
         Set<String> requiredKeys = new HashSet<>();
-        JsonNode fieldsNode = objectMapper.readTree(template.getFields());
-        for (JsonNode field : fieldsNode) {
-            requiredKeys.add(field.get("key").asText());
+        for (FieldDefinition field : template.getFields()) {
+            requiredKeys.add(field.key());
         }
 
         Set<String> missingKeys = new HashSet<>();

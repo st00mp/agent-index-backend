@@ -3,13 +3,18 @@ package com.st00mp.agentindexbackend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
 public class AgentTemplate {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -25,11 +30,9 @@ public class AgentTemplate {
     @Column(nullable = false)
     private String instructions;
 
-    // TODO(#8): migrate to a structured/jsonb column + converter
-    // if JSON parsing spreads or DB-level validation is needed.
-    @Lob
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
-    private String fields;
+    private List<FieldDefinition> fields;
 
     @Column(nullable = false)
     private String version;

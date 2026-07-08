@@ -2,6 +2,7 @@ package com.st00mp.agentindexbackend.controller;
 
 import com.st00mp.agentindexbackend.dto.InstanceRequest;
 import com.st00mp.agentindexbackend.dto.TemplateRequest;
+import com.st00mp.agentindexbackend.entity.FieldDefinition;
 import com.st00mp.agentindexbackend.entity.AgentInstance;
 import com.st00mp.agentindexbackend.repository.AgentInstanceRepository;
 import com.st00mp.agentindexbackend.service.AgentInstanceService;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -53,7 +55,7 @@ class AgentInstanceControllerTest {
                     "Sales",
                     "Generates a personalised quote based on the company name and hourly rate.",
                     "You are a quote assistant for {{company_name}}.",
-                    "[{\"key\":\"company_name\"}]",
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),
                     "1.0.0"
             );
             var templateId = agentTemplateService.create(templateRequest).getId();
@@ -80,7 +82,7 @@ class AgentInstanceControllerTest {
             var templateRequest = new TemplateRequest(
                     "Quote Agent", "Sales", "desc",
                     "Instructions {{company_name}}",
-                    "[{\"key\":\"company_name\"}]",
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),
                     "1.0.0"
             );
             var templateId = agentTemplateService.create(templateRequest).getId();
@@ -102,7 +104,7 @@ class AgentInstanceControllerTest {
             var templateRequest = new TemplateRequest(
                     "Quote Agent", "Sales", "desc",
                     "Instructions {{company_name}}",
-                    "[{\"key\":\"company_name\"}]",
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),
                     "1.0.0"
             );
             var templateId = agentTemplateService.create(templateRequest).getId();
@@ -159,7 +161,7 @@ class AgentInstanceControllerTest {
                     "Sales",
                     "desc",
                     "You are the assistant for {{company_name}}.",
-                    "[{\"key\":\"company_name\"}]",
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),
                     "1.0.0")).getId();
 
             var instanceId = agentInstanceService.create(templateId,
@@ -186,7 +188,7 @@ class AgentInstanceControllerTest {
             var templateId = agentTemplateService.create(new TemplateRequest(
                     "Quote Agent", "Sales", "desc",
                     "Hi {{company_name}}, signed {{signature}}.",   // 2 placeholders
-                    "[{\"key\":\"company_name\"}]",                  // fields : signature ABSENT
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),                  // fields : signature ABSENT
                     "1.0.0")).getId();
 
             var instanceId = agentInstanceService.create(templateId,
@@ -226,7 +228,7 @@ class AgentInstanceControllerTest {
                     "Sales",
                     "desc",
                     "You are the assistant for {{company_name}}.",
-                    "[{\"key\":\"company_name\"}]",
+                    List.of(new FieldDefinition("company_name", "Company name", "text", "")),
                     "1.0.0")).getId();
 
             var instanceId = agentInstanceService.create(templateId,
