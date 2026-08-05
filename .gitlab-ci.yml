@@ -1,8 +1,0 @@
-stages:
-  - build
-
-build-and-test:
-  stage: build
-  image: maven:3.9-eclipse-temurin-21
-  script:
-    - mvn --batch-mode verify
