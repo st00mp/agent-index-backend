@@ -1,10 +1,12 @@
-# AgentIndex — Backend
+# AgentIndex - Backend
+
+![Java CI](https://github.com/st00mp/agent-index-backend/actions/workflows/maven.yml/badge.svg)
 
 Registry of agent templates: an author defines instruction templates with
 placeholders, a client customizes them through a wizard, and the service
 assembles the final spec by substituting the values.
 
-REST API built with Spring Boot. First backend service of the AgentIndex project.
+REST API built with Spring Boot. Personal project exploring backend design and practices.
 
 ## Stack
 
